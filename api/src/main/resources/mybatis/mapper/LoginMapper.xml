@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.isys.api.common.login.mapper.LoginMapper">
+    <!-- 로그인 -->
+    <select id="login" resultType="com.isys.api.common.login.dto.LoginResponseDTO">
+        SELECT NAME, USER_ID
+        FROM user_info
+        WHERE
+        NAME = #{name, jdbcType=VARCHAR}
+        AND PASSWORD = #{password, jdbcType=VARCHAR}
+    </select>
+</mapper>
