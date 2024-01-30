@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.isys.api.business.alarm.mapper.AlarmMapper">
+    <!-- 알람 -->
+    <select id="getAlarmList" resultType="com.isys.api.business.alarm.dto.AlarmListResponseDTO">
+        SELECT * FROM hstation_event
+        WHERE
+        DEV_EVENT_TIME &gt;= #{requestDTO.startDate, jdbcType=TIMESTAMP}
+        AND DEV_EVENT_TIME &lt;= #{requestDTO.endDate, jdbcType=TIMESTAMP}
+        <if test="requestDTO.point != null">
+            AND CONTAINER_FK IN
+            <foreach item="item" collection="requestDTO.point" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="requestDTO.train != null and requestDTO.train != '' and requestDTO.train != 'null'">
+            AND PT_NUMBER = #{requestDTO.train, jdbcType=VARCHAR}
+        </if>
+        LIMIT #{requestDTO.pageSize}
+        OFFSET #{offset}
+    </select>
+
+    <!-- 알람 상세 정보 조회 -->
+    <select id="getAlarmDetail" resultType="com.isys.api.business.alarm.dto.AlarmListResponseDTO">
+        SELECT la.*
+        FROM log_alarm la
+        JOIN hstation_event he ON la.REF_LOG_ID = he.REF_LOG_ID
+        WHERE la.REF_LOG_ID = #{requestId.id, jdbcType=BIGINT}
+    </select>
+</mapper>

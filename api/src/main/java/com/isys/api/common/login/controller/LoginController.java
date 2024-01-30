@@ -23,11 +23,12 @@ public class LoginController {
     private final LoginService loginService;
 
     @PostMapping("/login")
-    @CrossOrigin(origins = "http://192.168.0.143:3000", allowCredentials = "true")
+//    @CrossOrigin(origins = "http://192.168.0.143:3000", allowCredentials = "true")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO, HttpServletRequest request, HttpServletResponse response) {
 
-        JSONObject obj = new JSONObject();
+        System.out.println(loginRequestDTO);
 
+        JSONObject obj = new JSONObject();
         Optional<LoginResponseDTO> userInfo = loginService.login(
                 loginRequestDTO.getName(),
                 loginRequestDTO.getPassword()
@@ -64,7 +65,7 @@ public class LoginController {
 
 
     @GetMapping("/checkSession")
-    @CrossOrigin(origins = "http://192.168.0.143:3000", allowCredentials = "true")
+//    @CrossOrigin(origins = "http://192.168.0.143:3000", allowCredentials = "true")
     public ResponseEntity<String> checkSession(HttpServletRequest request) {
         HttpSession session = request.getSession(false); // 기존 세션을 가져옵니다. 세션이 없으면 null 반환
 
@@ -78,7 +79,7 @@ public class LoginController {
     }
 
     @PostMapping("/logout")
-    @CrossOrigin(origins = "http://192.168.0.143:3000", allowCredentials = "true")
+//    @CrossOrigin(origins = "http://192.168.0.143:3000", allowCredentials = "true")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         // 기존의 AccessToken 및 RefreshToken 쿠키를 찾아서 만료시킴
         Cookie[] cookies = request.getCookies();
