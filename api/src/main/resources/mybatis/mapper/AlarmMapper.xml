@@ -19,6 +19,7 @@
         <if test="requestDTO.train != null and requestDTO.train != '' and requestDTO.train != 'null'">
             AND PT_NUMBER = #{requestDTO.train, jdbcType=VARCHAR}
         </if>
+        AND REPORT_FILENAME IS NOT NULL
         LIMIT #{requestDTO.pageSize}
         OFFSET #{offset}
     </select>
@@ -29,5 +30,6 @@
         FROM log_alarm la
         JOIN hstation_event he ON la.REF_LOG_ID = he.REF_LOG_ID
         WHERE la.REF_LOG_ID = #{requestId.id, jdbcType=BIGINT}
+        AND la.REPORT_FILENAME IS NOT NULL
     </select>
 </mapper>

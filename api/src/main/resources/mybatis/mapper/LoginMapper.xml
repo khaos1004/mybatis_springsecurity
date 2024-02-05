@@ -9,7 +9,7 @@
         SELECT NAME, USER_ID
         FROM user_info
         WHERE
-        NAME = #{name, jdbcType=VARCHAR}
+        NAME = #{id, jdbcType=VARCHAR}
         AND PASSWORD = #{password, jdbcType=VARCHAR}
     </select>
 </mapper>

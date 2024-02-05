@@ -12,7 +12,7 @@ import java.util.Optional;
 public class LoginService {
     private final LoginMapper loginMapper;
 
-    public Optional<LoginResponseDTO> login(String name, String password) {
-        return loginMapper.login(name, password);
+    public Optional<LoginResponseDTO> login(String id, String password) {
+        return loginMapper.login(id, password);
     }
 }

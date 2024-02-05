@@ -10,6 +10,6 @@ public interface LoginMapper {
     /**
      * 로그인
      */
-    Optional<LoginResponseDTO> login(String name, String password);
+    Optional<LoginResponseDTO> login(String id, String password);
 
 }

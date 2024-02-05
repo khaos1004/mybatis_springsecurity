@@ -30,7 +30,7 @@ public class LoginController {
 
         JSONObject obj = new JSONObject();
         Optional<LoginResponseDTO> userInfo = loginService.login(
-                loginRequestDTO.getName(),
+                loginRequestDTO.getId(),
                 loginRequestDTO.getPassword()
         );
 
