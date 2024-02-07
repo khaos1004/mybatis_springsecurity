@@ -24,7 +24,7 @@ public class AlarmService {
         return alarmMapper.getAlarmList(alarmListRequestDTO, offset);
     }
 
-    public List<Optional<AlarmListResponseDTO>> alarmDetail(AlarmDetailRequestDTO alarmDetailRequestDTO) {
+    public Optional<AlarmListResponseDTO> alarmDetail(AlarmDetailRequestDTO alarmDetailRequestDTO) {
         return alarmMapper.getAlarmDetail(alarmDetailRequestDTO);
     }
 }
