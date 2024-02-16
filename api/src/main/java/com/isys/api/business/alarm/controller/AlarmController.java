@@ -58,7 +58,7 @@ public class AlarmController {
 
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getAlarmDetail(AlarmDetailRequestDTO alarmDetailRequestDTO) {
-        Optional<AlarmListResponseDTO> result = alarmService.alarmDetail(alarmDetailRequestDTO);
+        List<Optional<AlarmListResponseDTO>> result = alarmService.alarmDetail(alarmDetailRequestDTO);
 
         System.out.println(alarmDetailRequestDTO);
 
