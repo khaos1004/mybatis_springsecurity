@@ -14,4 +14,6 @@ public interface AlarmMapper {
     List<AlarmListResponseDTO> getAlarmList(@Param("requestDTO") AlarmListRequestDTO requestDTO, @Param("offset") int offset);
 
     List<Optional<AlarmListResponseDTO>> getAlarmDetail(@Param("requestId") AlarmDetailRequestDTO id);
+
+    List<Optional<AlarmListResponseDTO>> getAlarm(@Param("requestId") AlarmDetailRequestDTO id);
 }

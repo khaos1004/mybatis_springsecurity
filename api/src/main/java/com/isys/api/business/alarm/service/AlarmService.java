@@ -19,12 +19,16 @@ public class AlarmService {
     private final AlarmMapper alarmMapper;
 
     public List<AlarmListResponseDTO> alarmList(AlarmListRequestDTO alarmListRequestDTO) {
-        int offset = (alarmListRequestDTO.getPage() - 1) * alarmListRequestDTO.getPageSize();
+        int offset = (alarmListRequestDTO.getSkip() - 1) * alarmListRequestDTO.getTake();
         offset = Math.max(offset, 0); // 음수가 되지 않도록 함
         return alarmMapper.getAlarmList(alarmListRequestDTO, offset);
     }
 
     public List<Optional<AlarmListResponseDTO>> alarmDetail(AlarmDetailRequestDTO alarmDetailRequestDTO) {
         return alarmMapper.getAlarmDetail(alarmDetailRequestDTO);
+    }
+
+    public List<Optional<AlarmListResponseDTO>> alarm(AlarmDetailRequestDTO alarmDetailRequestDTO) {
+        return alarmMapper.getAlarm(alarmDetailRequestDTO);
     }
 }

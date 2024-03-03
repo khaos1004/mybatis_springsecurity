@@ -20,7 +20,7 @@
             AND PT_NUMBER = #{requestDTO.train, jdbcType=VARCHAR}
         </if>
         AND REPORT_FILENAME IS NOT NULL
-        LIMIT #{requestDTO.pageSize}
+        LIMIT #{requestDTO.skip}
         OFFSET #{offset}
     </select>
 
@@ -30,6 +30,14 @@
         FROM log_alarm la
         JOIN hstation_event he ON la.REF_LOG_ID = he.REF_LOG_ID
         WHERE la.REF_LOG_ID = #{requestId.id, jdbcType=BIGINT}
-        AND la.REPORT_FILENAME IS NOT NULL
+<!--        AND la.REPORT_FILENAME IS NOT NULL-->
+    </select>
+
+    <!-- 알람 상세 정보 조회 -->
+    <select id="getAlarm" resultType="com.isys.api.business.alarm.dto.AlarmListResponseDTO">
+        SELECT he.*
+        FROM hstation_event he
+        WHERE he.LOG_ID = #{requestId.id, jdbcType=BIGINT}
+<!--        AND he.REPORT_FILENAME IS NOT NULL-->
     </select>
 </mapper>

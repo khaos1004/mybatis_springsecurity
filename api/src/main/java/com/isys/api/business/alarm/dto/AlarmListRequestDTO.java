@@ -20,7 +20,7 @@ public class AlarmListRequestDTO {
 
     private List<BigDecimal> point; //CONTAINER_FK
     private String train; //PT_NUM
-    private int page = 1; // 기본값으로 5 설정
-    private int pageSize = 30; // 기본값으로 30 설정
+    private int take = 1; // 기본값으로 1 설정
+    private int skip = 30; // 기본값으로 20 설정
 }
 
