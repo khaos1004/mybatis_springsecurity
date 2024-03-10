@@ -45,14 +45,14 @@ public class AlarmController {
     public ResponseEntity<?> getAlarmList(AlarmListRequestDTO alarmListRequestDTO) {
 
         List<AlarmListResponseDTO> result = alarmService.alarmList(alarmListRequestDTO);
+        int count = alarmService.alarmListCount(alarmListRequestDTO);
         int listSize = result.size();
         String train = alarmListRequestDTO.getTrain();
         String trainValueType = (train != null) ? train.getClass().getName() : "null";
         logger.info("Received train value: {}, Type: {}", train, trainValueType);
 
         if (!result.isEmpty()) {
-            return ResponseEntity.ok(Map.of("ok", true, "count", listSize, "result", result));
-//            return ResponseEntity.ok(Map.of("ok", true, "result", result));
+            return ResponseEntity.ok(Map.of("ok", true, "count", listSize, "totalCount", count, "result", result));
         }
 
         return ResponseEntity.ok(Map.of("ok", false, "result", result));
@@ -61,10 +61,11 @@ public class AlarmController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getAlarmDetail(AlarmDetailRequestDTO alarmDetailRequestDTO) {
         List<Optional<AlarmListResponseDTO>> result = alarmService.alarmDetail(alarmDetailRequestDTO);
+        int count = alarmService.alarmDetailCount(alarmDetailRequestDTO);
 
         if (!result.isEmpty()) {
 //            return ResponseEntity.ok(Map.of("ok", true, "result", result.get(0)));
-            return ResponseEntity.ok(Map.of("ok", true, "result", result));
+            return ResponseEntity.ok(Map.of("ok", true, "totalCount", count, "result", result));
         }
         return ResponseEntity.ok(Map.of("ok", false, "result", result));
     }

@@ -13,7 +13,11 @@ import java.util.Optional;
 public interface AlarmMapper {
     List<AlarmListResponseDTO> getAlarmList(@Param("requestDTO") AlarmListRequestDTO requestDTO, @Param("offset") int offset);
 
+    int getAlarmCount(@Param("requestDTO") AlarmListRequestDTO requestDTO);
+
     List<Optional<AlarmListResponseDTO>> getAlarmDetail(@Param("requestId") AlarmDetailRequestDTO id);
+
+    int getAlarmDetailCount(@Param("requestId") AlarmDetailRequestDTO id);
 
     List<Optional<AlarmListResponseDTO>> getAlarm(@Param("requestId") AlarmDetailRequestDTO id);
 }

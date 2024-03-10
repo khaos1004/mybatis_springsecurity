@@ -1,4 +1,4 @@
-package com.isys.api.common.jwt.dto;
+package com.isys.api.common.login.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

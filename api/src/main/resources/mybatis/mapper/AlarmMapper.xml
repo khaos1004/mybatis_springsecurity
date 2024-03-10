@@ -20,17 +20,45 @@
             AND PT_NUMBER = #{requestDTO.train, jdbcType=VARCHAR}
         </if>
         AND REPORT_FILENAME IS NOT NULL
-        LIMIT #{requestDTO.skip}
+        LIMIT #{requestDTO.take}
         OFFSET #{offset}
+    </select>
+
+    <select id="getAlarmCount" resultType="int">
+        SELECT COUNT(*) FROM hstation_event
+        WHERE
+        DEV_EVENT_TIME >= #{requestDTO.startDate, jdbcType=TIMESTAMP}
+        AND DEV_EVENT_TIME &lt;= #{requestDTO.endDate, jdbcType=TIMESTAMP}
+        <if test="requestDTO.point != null">
+            AND CONTAINER_FK IN
+            <foreach item="item" collection="requestDTO.point" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="requestDTO.train != null and requestDTO.train != '' and requestDTO.train != 'null'">
+            AND PT_NUMBER = #{requestDTO.train, jdbcType=VARCHAR}
+        </if>
+        AND REPORT_FILENAME IS NOT NULL
     </select>
 
     <!-- 알람 상세 정보 조회 -->
     <select id="getAlarmDetail" resultType="com.isys.api.business.alarm.dto.AlarmListResponseDTO">
-        SELECT la.*
-        FROM log_alarm la
+        SELECT *
+        FROM log_alarm
+       <!-- LEFT JOIN hstation_event he ON la.REF_LOG_ID = he.REF_LOG_ID -->
+        WHERE REF_LOG_ID = #{requestId.id, jdbcType=BIGINT}
+
+    </select>
+
+
+    <select id="getAlarmDetailCount" resultType="int">
+        SELECT count(*)
+        FROM log_alarm
+        <!-- LEFT JOIN hstation_event he ON la.REF_LOG_ID = he.REF_LOG_ID -->
+        WHERE REF_LOG_ID = #{requestId.id, jdbcType=BIGINT}
+        <!--FROM log_alarm la
         JOIN hstation_event he ON la.REF_LOG_ID = he.REF_LOG_ID
-        WHERE la.REF_LOG_ID = #{requestId.id, jdbcType=BIGINT}
-<!--        AND la.REPORT_FILENAME IS NOT NULL-->
+        WHERE la.REF_LOG_ID = #{requestId.id, jdbcType=BIGINT}-->
     </select>
 
     <!-- 알람 상세 정보 조회 -->
