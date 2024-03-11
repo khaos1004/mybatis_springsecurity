@@ -1,10 +1,12 @@
 package com.isys.api.common.login.controller;
 
+import com.isys.api.common.jwt.JWTUtil;
 import com.isys.api.common.login.dto.JwtToken;
 import com.isys.api.common.login.dto.LoginRequestDTO;
 import com.isys.api.common.login.dto.LoginResponseDTO;
 import com.isys.api.common.login.dto.UserRequestDTO;
 import com.isys.api.common.login.service.LoginService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,13 +23,14 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/users")
+//@RequestMapping("/users")
 @RequiredArgsConstructor
 @Slf4j
 public class LoginController {
     private final LoginService loginService;
+    private final JWTUtil jwtUtil;
 
-    @PostMapping("/login")
+    @PostMapping("/api/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest, HttpServletRequest request, HttpServletResponse response) {
 
             String username = loginRequest.getId();
@@ -67,21 +70,66 @@ public class LoginController {
             return ResponseEntity.status(401).body(obj.toString());
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
 
-    @GetMapping("/checkSession")
-    public ResponseEntity<String> checkSession(HttpServletRequest request) {
-        HttpSession session = request.getSession(false); // 기존 세션을 가져옵니다. 세션이 없으면 null 반환
+        Cookie accessCookie = createAccessCookie("accessToken", "token_value");
+        // SameSite=None과 Secure 설정을 포함한 쿠키 문자열 생성
+        String cookieString = String.format("%s=%s; Path=%s; Max-Age=%d; Secure; HttpOnly; SameSite=None",
+                accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
 
-        if (session != null && session.getAttribute("loginMember") != null) {
-            // 세션이 존재하고, 로그인한 사용자의 정보가 세션에 있는 경우
-            return ResponseEntity.ok("Session is valid");
-        } else {
-            // 세션이 없거나, 로그인한 사용자의 정보가 없는 경우
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is invalid or expired");
+        //아래코드는 서비스단으로 변경
+        //get refresh token
+        String refresh = null;
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+
+            if (cookie.getName().equals("refreshToken")) {
+
+                refresh = cookie.getValue();
+            }
         }
+
+        if (refresh == null) {
+
+            //response status code
+            return new ResponseEntity<>("refresh token null", HttpStatus.BAD_REQUEST);
+        }
+
+        //expired check
+        try {
+            jwtUtil.isExpired(refresh);
+        } catch (ExpiredJwtException e) {
+
+            //response status code
+            return new ResponseEntity<>("refresh token expired", HttpStatus.BAD_REQUEST);
+        }
+
+        // 토큰이 refresh인지 확인 (발급시 페이로드에 명시)
+        String category = jwtUtil.getCategory(refresh);
+
+        if (!category.equals("refreshToken")) {
+
+            //response status code
+            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+        }
+
+        String username = jwtUtil.getUsername(refresh);
+//        String role = jwtUtil.getRole(refresh);
+
+        //make new JWT
+        String access = jwtUtil.createJwt("accessToken", username, 1800000L);
+
+        //response
+        response.addHeader("Set-Cookie", cookieString);
+        response.setHeader("accessToken", access);
+        response.addCookie(createAccessCookie("accessToken", access));
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/logout")
+
+    @PostMapping("/users/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
 
         Map<String, Object> obj = new HashMap<>();
@@ -89,7 +137,8 @@ public class LoginController {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("AccessToken") || cookie.getName().equals("RefreshToken")) {
+//                if (cookie.getName().equals("accessToken") || cookie.getName().equals("refreshToken")) {
+                if (cookie.getName().equals("accessToken") || cookie.getName().equals("refreshToken")) {
                     cookie.setValue("");
                     cookie.setPath("/");
                     cookie.setMaxAge(0); // 쿠키를 즉시 만료시킴
@@ -99,5 +148,17 @@ public class LoginController {
         }
         obj.put("OK","true");
         return new ResponseEntity<>(obj, HttpStatus.OK);
+    }
+
+    private Cookie createAccessCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(30*60);
+//        cookie.setSecure(true); //https 통신일경우 설정
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+
+        return cookie;
     }
 }

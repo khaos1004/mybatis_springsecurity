@@ -47,9 +47,6 @@ public class AlarmController {
         List<AlarmListResponseDTO> result = alarmService.alarmList(alarmListRequestDTO);
         int count = alarmService.alarmListCount(alarmListRequestDTO);
         int listSize = result.size();
-        String train = alarmListRequestDTO.getTrain();
-        String trainValueType = (train != null) ? train.getClass().getName() : "null";
-        logger.info("Received train value: {}, Type: {}", train, trainValueType);
 
         if (!result.isEmpty()) {
             return ResponseEntity.ok(Map.of("ok", true, "count", listSize, "totalCount", count, "result", result));

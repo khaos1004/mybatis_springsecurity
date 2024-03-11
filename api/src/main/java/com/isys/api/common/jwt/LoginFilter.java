@@ -7,6 +7,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -18,7 +19,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 @Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -47,7 +50,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
             System.out.println(loginRequest);
             System.out.println(username);
-//            System.out.println(loginRequest);
             System.out.println(password);
 
             // 추출한 정보를 바탕으로 UsernamePasswordAuthenticationToken 생성
@@ -58,6 +60,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         } catch (IOException e) {
             throw new AuthenticationServiceException("Failed to parse authentication request body", e);
         }
+        //아래는 폼로그인
 //        String username = request.
 //        String password = obtainPassword(request);
 //
@@ -70,7 +73,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
+
+        String jsonResponse = "{\"OK\": \"true\"}";
 
         //유저 정보
         String username = authentication.getName();
@@ -80,33 +85,66 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
        //String role = auth.getAuthority();
 
+        Cookie accessCookie = createAccessCookie("accessToken", "token_value");
+        // SameSite=None과 Secure 설정을 포함한 쿠키 문자열 생성
+        String cookieString = String.format("%s=%s; Path=%s; Max-Age=%d; Secure; HttpOnly; SameSite=None",
+                accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
+
+        Cookie refreshCookie = createAccessCookie("accessToken", "token_value");
+        // SameSite=None과 Secure 설정을 포함한 쿠키 문자열 생성
+        String refreshCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; Secure; HttpOnly; SameSite=None",
+                accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
+
         //토큰 생성
-        String access = jwtUtil.createJwt("access", username, 600000L);
-        String refresh = jwtUtil.createJwt("refresh", username, 86400000L);
+        String access = jwtUtil.createJwt("accessToken", username, 1800000L);
+//        String access = jwtUtil.createJwt("accessToken", username, 30000L);
+        String refresh = jwtUtil.createJwt("refreshToken", username, 36000000L);
 
         //응답 설정
-//        response.setHeader("access", access);
-        response.addCookie(createCookie("refreshToken", refresh));
-        response.addCookie(createCookie("accessToken", access));
+        response.addHeader("Set-Cookie", cookieString);
+        response.addHeader("Set-Cookie", refreshCookieString);
+        response.setHeader("accessToken", access);
+        response.addCookie(createAccessCookie("accessToken", access));
+        response.addCookie(createRefeshCookie("refreshToken", refresh));
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(jsonResponse);
+        response.getWriter().flush();
         response.setStatus(HttpStatus.OK.value());
 
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
 
+        String jsonResponsefail = "{\"OK\": \"false\"}";
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(jsonResponsefail);
+        response.getWriter().flush();
         response.setStatus(401);
     }
 
-    private Cookie createCookie(String key, String value) {
+    private Cookie createAccessCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
-        //cookie.setSecure(true); //https 통신일경우 설정
-        //cookie.setPath("/");
+        cookie.setMaxAge(30*60);
+//        cookie.setSecure(true); //https 통신일경우 설정
+        cookie.setPath("/");
         cookie.setHttpOnly(true);
+
 
         return cookie;
     }
 
+    private Cookie createRefeshCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(10*60*60);
+//        cookie.setSecure(true); //https 통신일경우 설정
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
+    }
 }

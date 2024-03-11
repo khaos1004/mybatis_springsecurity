@@ -10,7 +10,7 @@
         WHERE
         DEV_EVENT_TIME &gt;= #{requestDTO.startDate, jdbcType=TIMESTAMP}
         AND DEV_EVENT_TIME &lt;= #{requestDTO.endDate, jdbcType=TIMESTAMP}
-        <if test="requestDTO.point != null">
+        <if test="requestDTO.point != null and !requestDTO.point.isEmpty()">
             AND CONTAINER_FK IN
             <foreach item="item" collection="requestDTO.point" open="(" separator="," close=")">
                 #{item}
