@@ -96,7 +96,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         refreshCookie.setPath("/");
         refreshCookie.setHttpOnly(true);
         // SameSite=None을 추가하여 크로스 사이트 요청 시 쿠키가 전송되도록 설정
-        String refreshCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=None",
+        String refreshCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=Lax",
                 refreshCookie.getName(), refreshCookie.getValue(), refreshCookie.getPath(), refreshCookie.getMaxAge());
         response.addHeader("Set-Cookie", refreshCookieString);
 
@@ -107,7 +107,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         accessCookie.setPath("/");
         accessCookie.setHttpOnly(true);
         // SameSite=None을 추가하여 크로스 사이트 요청 시 쿠키가 전송되도록 설정
-        String accessCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=None",
+        String accessCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=Lax",
                 accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
         response.addHeader("Set-Cookie", accessCookieString);
 

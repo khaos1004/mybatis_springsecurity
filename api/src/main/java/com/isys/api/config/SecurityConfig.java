@@ -87,7 +87,7 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/refresh").permitAll()
+                        .requestMatchers("/login", "/refresh", "/alarm/report").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated())
                         .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
