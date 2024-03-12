@@ -85,33 +85,42 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
        //String role = auth.getAuthority();
 
-        Cookie accessCookie = createAccessCookie("accessToken", "token_value");
-        // SameSite=None과 Secure 설정을 포함한 쿠키 문자열 생성
-        String cookieString = String.format("%s=%s; Path=%s; Max-Age=%d; Secure; HttpOnly; SameSite=None",
-                accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
-
-        Cookie refreshCookie = createAccessCookie("accessToken", "token_value");
-        // SameSite=None과 Secure 설정을 포함한 쿠키 문자열 생성
-        String refreshCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; Secure; HttpOnly; SameSite=None",
-                accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
-
         //토큰 생성
         String access = jwtUtil.createJwt("accessToken", username, 1800000L);
-//        String access = jwtUtil.createJwt("accessToken", username, 30000L);
         String refresh = jwtUtil.createJwt("refreshToken", username, 36000000L);
 
-        //응답 설정
-        response.addHeader("Set-Cookie", cookieString);
+        // 리프레쉬 토큰 쿠키 설정
+        Cookie refreshCookie = new Cookie("refreshToken", refresh);
+        refreshCookie.setMaxAge(10 * 60 * 60); // 10시간
+        refreshCookie.setSecure(false); // HTTPS 통신일 경우만 쿠키 전송
+        refreshCookie.setPath("/");
+        refreshCookie.setHttpOnly(true);
+
+        // SameSite=None을 추가하여 크로스 사이트 요청 시 쿠키가 전송되도록 설정
+        String refreshCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=None",
+                refreshCookie.getName(), refreshCookie.getValue(), refreshCookie.getPath(), refreshCookie.getMaxAge());
         response.addHeader("Set-Cookie", refreshCookieString);
-        response.setHeader("accessToken", access);
-        response.addCookie(createAccessCookie("accessToken", access));
-        response.addCookie(createRefeshCookie("refreshToken", refresh));
+
+
+        //응답 설정
+        response.setHeader("accessToken", access); // 액세스 토큰을 HTTP 헤더에 설정
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(jsonResponse);
         response.getWriter().flush();
         response.setStatus(HttpStatus.OK.value());
+    }
 
+    private Cookie createRefeshCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(10*60*60);
+//        cookie.setSecure(true); //https 통신일경우 설정
+        cookie.setPath("/");
+        cookie.setSecure(false);
+        cookie.setHttpOnly(true);
+
+        return cookie;
     }
 
     @Override
@@ -123,28 +132,5 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.getWriter().write(jsonResponsefail);
         response.getWriter().flush();
         response.setStatus(401);
-    }
-
-    private Cookie createAccessCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(30*60);
-//        cookie.setSecure(true); //https 통신일경우 설정
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-
-
-        return cookie;
-    }
-
-    private Cookie createRefeshCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(10*60*60);
-//        cookie.setSecure(true); //https 통신일경우 설정
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-
-        return cookie;
     }
 }

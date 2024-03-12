@@ -73,10 +73,6 @@ public class LoginController {
     @PostMapping("/refresh")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
 
-        Cookie accessCookie = createAccessCookie("accessToken", "token_value");
-        // SameSite=None과 Secure 설정을 포함한 쿠키 문자열 생성
-        String cookieString = String.format("%s=%s; Path=%s; Max-Age=%d; Secure; HttpOnly; SameSite=None",
-                accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
 
         //아래코드는 서비스단으로 변경
         //get refresh token
@@ -121,10 +117,7 @@ public class LoginController {
         String access = jwtUtil.createJwt("accessToken", username, 1800000L);
 
         //response
-        response.addHeader("Set-Cookie", cookieString);
         response.setHeader("accessToken", access);
-        response.addCookie(createAccessCookie("accessToken", access));
-
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -133,32 +126,25 @@ public class LoginController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
 
         Map<String, Object> obj = new HashMap<>();
-        // 기존의 AccessToken 및 RefreshToken 쿠키를 찾아서 만료시킴
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-//                if (cookie.getName().equals("accessToken") || cookie.getName().equals("refreshToken")) {
-                if (cookie.getName().equals("accessToken") || cookie.getName().equals("refreshToken")) {
-                    cookie.setValue("");
-                    cookie.setPath("/");
-                    cookie.setMaxAge(0); // 쿠키를 즉시 만료시킴
-                    response.addCookie(cookie); // 변경된 쿠키를 응답에 추가
-                }
-            }
-        }
-        obj.put("OK","true");
-        return new ResponseEntity<>(obj, HttpStatus.OK);
-    }
-
-    private Cookie createAccessCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(30*60);
-//        cookie.setSecure(true); //https 통신일경우 설정
+        Cookie cookie = new Cookie("refreshToken", null); // 쿠키 이름과 동일하게
         cookie.setPath("/");
         cookie.setHttpOnly(true);
-
-
-        return cookie;
+        cookie.setSecure(true); // HTTPS 사용 시 true로 설정
+        cookie.setMaxAge(0); // 쿠키 만료시키기
+        response.addCookie(cookie);
+        // 기존의 AccessToken 및 RefreshToken 쿠키를 찾아서 만료시킴
+//        Cookie[] cookies = request.getCookies();
+//        if (cookies != null) {
+////            for (Cookie cookie : cookies) {
+//////                if (cookie.getName().equals("accessToken") || cookie.getName().equals("refreshToken")) {
+////                    cookie.setValue("");
+////                    cookie.setPath("/");
+////                    cookie.setMaxAge(0); // 쿠키를 즉시 만료시킴
+////                    response.addCookie(cookie); // 변경된 쿠키를 응답에 추가
+//////                }
+////            }
+//        }
+        obj.put("OK","true");
+        return new ResponseEntity<>(obj, HttpStatus.OK);
     }
 }
