@@ -30,7 +30,19 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         // 헤더에서 access키에 담긴 토큰을 꺼냄
-        String accessToken = request.getHeader("accessToken");
+//        String accessToken = request.getHeader("accessToken");
+
+        String accessToken = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    accessToken = cookie.getValue();
+                    break; // 쿠키를 찾았으므로 반복 중단
+                }
+            }
+        }
+
 
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {

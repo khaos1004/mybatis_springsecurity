@@ -95,15 +95,25 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         refreshCookie.setSecure(false); // HTTPS 통신일 경우만 쿠키 전송
         refreshCookie.setPath("/");
         refreshCookie.setHttpOnly(true);
-
         // SameSite=None을 추가하여 크로스 사이트 요청 시 쿠키가 전송되도록 설정
         String refreshCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=None",
                 refreshCookie.getName(), refreshCookie.getValue(), refreshCookie.getPath(), refreshCookie.getMaxAge());
         response.addHeader("Set-Cookie", refreshCookieString);
 
+        // 액세스 토큰 쿠키 설정
+        Cookie accessCookie = new Cookie("accessToken", access);
+        accessCookie.setMaxAge(30 * 60); // 30분
+        accessCookie.setSecure(false); // HTTPS 통신일 경우만 쿠키 전송
+        accessCookie.setPath("/");
+        accessCookie.setHttpOnly(true);
+        // SameSite=None을 추가하여 크로스 사이트 요청 시 쿠키가 전송되도록 설정
+        String accessCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=None",
+                accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
+        response.addHeader("Set-Cookie", accessCookieString);
+
 
         //응답 설정
-        response.setHeader("accessToken", access); // 액세스 토큰을 HTTP 헤더에 설정
+//        response.setHeader("accessToken", access); // 액세스 토큰을 HTTP 헤더에 설정
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(jsonResponse);
