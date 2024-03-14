@@ -36,6 +36,14 @@ public class CustomUserDetails implements UserDetails {
         return userAuthInfo.getNAME();
     }
 
+    public String getUserId() {
+        return userAuthInfo.getUSER_ID();
+    }
+
+    public String getUserGroupFk() {
+        return userAuthInfo.getUSERGROUP_FK();
+    }
+
 
     @Override
     public boolean isAccountNonExpired() {

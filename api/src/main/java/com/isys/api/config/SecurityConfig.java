@@ -41,7 +41,7 @@ public class SecurityConfig {
     public CorsConfigurationSource apiConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://192.168.0.68:3000")); // 허용할 Origin 설정
+        configuration.setAllowedOrigins(List.of("http://192.168.0.68:3000", "http://121.139.31.25:5410")); // 허용할 Origin 설정
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메소드 설정
         configuration.setAllowedHeaders(List.of("*")); // 허용할 헤더 설정
         configuration.setAllowCredentials(true); // Credential 허용 설정

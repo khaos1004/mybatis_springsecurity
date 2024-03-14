@@ -1,7 +1,9 @@
 package com.isys.api.common.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.isys.api.common.login.dto.CustomUserDetails;
 import com.isys.api.common.login.dto.LoginRequestDTO;
+import com.isys.api.common.login.dto.UserAuthInfo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +17,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
@@ -75,10 +80,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
 
-        String jsonResponse = "{\"OK\": \"true\"}";
+        String NAME = "";
+        String USER_ID = "";
+        String USERGROUP_FK = "";
+
+        if (authentication.getPrincipal() instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+            // CustomUserDetails를 통해 UserAuthInfo에서 정보 가져오기
+            NAME = userDetails.getUsername(); // 이미 UserDetails 인터페이스에 정의된 메소드를 통해 사용자 이름을 가져옴
+            USER_ID = userDetails.getUserId(); // CustomUserDetails에서 정의한 메소드를 통해 userId 가져오기
+            USERGROUP_FK = userDetails.getUserGroupFk(); // CustomUserDetails에서 정의한 메소드를 통해 userGroupFk 가져오기
+        }
+
+
+        String jsonResponse = String.format("{\"OK\": \"true\", \"NAME\": \"%s\", \"USER_ID\": \"%s\", \"USERGROUP_FK\": \"%s\"}", NAME, USER_ID, USERGROUP_FK);
 
         //유저 정보
-        String username = authentication.getName();
+//        String NAME = authentication.getName();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -86,8 +105,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
        //String role = auth.getAuthority();
 
         //토큰 생성
-        String access = jwtUtil.createJwt("accessToken", username, 1800000L);
-        String refresh = jwtUtil.createJwt("refreshToken", username, 36000000L);
+        String access = jwtUtil.createJwt("accessToken", NAME, 1800000L);
+        String refresh = jwtUtil.createJwt("refreshToken", NAME, 36000000L);
 
         // 리프레쉬 토큰 쿠키 설정
         Cookie refreshCookie = new Cookie("refreshToken", refresh);

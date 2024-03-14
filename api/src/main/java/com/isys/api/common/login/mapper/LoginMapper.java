@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.security.core.userdetails.User;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
 import java.util.Optional;
 
 @Mapper
@@ -16,7 +17,7 @@ public interface LoginMapper {
      */
     Optional<LoginResponseDTO> login(String id, String password);
 
-    @Select("SELECT NAME, PASSWORD FROM user_info WHERE NAME = #{id}")
+    @Select("SELECT USER_ID, USERGROUP_FK, NAME, PASSWORD FROM user_info WHERE NAME = #{id}")
     UserAuthInfo findByName(String username);
 
     @Select("SELECT PASSWORD FROM user_info")

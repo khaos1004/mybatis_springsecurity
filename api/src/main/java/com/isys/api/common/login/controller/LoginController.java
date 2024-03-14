@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -71,7 +72,9 @@ public class LoginController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        String jsonResponse = String.format("{\"OK\": \"true\"}");
 
         //아래코드는 서비스단으로 변경
         //get refresh token
@@ -125,9 +128,9 @@ public class LoginController {
         String accessCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=Lax",
                 accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
         response.addHeader("Set-Cookie", accessCookieString);
+        response.getWriter().write(jsonResponse);
+        response.getWriter().flush();
 
-        //response
-//        response.setHeader("accessToken", access);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -136,12 +139,6 @@ public class LoginController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
 
         Map<String, Object> obj = new HashMap<>();
-//        Cookie cookie = new Cookie("refreshToken", null); // 쿠키 이름과 동일하게
-//        cookie.setPath("/");
-//        cookie.setHttpOnly(true);
-//        cookie.setSecure(true); // HTTPS 사용 시 true로 설정
-//        cookie.setMaxAge(0); // 쿠키 만료시키기
-//        response.addCookie(cookie);
         // 기존의 AccessToken 및 RefreshToken 쿠키를 찾아서 만료시킴
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
