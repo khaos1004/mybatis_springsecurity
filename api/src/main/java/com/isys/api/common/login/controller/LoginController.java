@@ -72,7 +72,7 @@ public class LoginController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity<?> refreshTokenVerification(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         String jsonResponse = String.format("{\"OK\": \"true\"}");
 
@@ -127,6 +127,71 @@ public class LoginController {
         // SameSite=None을 추가하여 크로스 사이트 요청 시 쿠키가 전송되도록 설정
         String accessCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=Lax",
                 accessCookie.getName(), accessCookie.getValue(), accessCookie.getPath(), accessCookie.getMaxAge());
+
+        response.addHeader("Set-Cookie", accessCookieString);
+        response.getWriter().write(jsonResponse);
+        response.getWriter().flush();
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/access")
+    public ResponseEntity<?> accessTokenVerification(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        String jsonResponse = String.format("{\"OK\": \"true\"}");
+
+        //아래코드는 서비스단으로 변경
+        //get refresh token
+        String access = null;
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+
+            if (cookie.getName().equals("accessToken")) {
+
+                access = cookie.getValue();
+            }
+        }
+
+        if (access == null) {
+
+            //response status code
+            return new ResponseEntity<>("access token is null", HttpStatus.BAD_REQUEST);
+        }
+
+        //expired check
+        try {
+            jwtUtil.isExpired(access);
+        } catch (ExpiredJwtException e) {
+
+            //response status code
+            return new ResponseEntity<>("access token expired", HttpStatus.BAD_REQUEST);
+        }
+
+        // 토큰이 refresh인지 확인 (발급시 페이로드에 명시)
+        String category = jwtUtil.getCategory(access);
+
+        if (!category.equals("accessToken")) {
+
+            //response status code
+            return new ResponseEntity<>("invalid access token", HttpStatus.BAD_REQUEST);
+        }
+
+        String username = jwtUtil.getUsername(access);
+//        String role = jwtUtil.getRole(refresh);
+
+        //make new JWT
+        String refreshToken = jwtUtil.createJwt("refreshToken", username, 36000000L);
+
+        // 액세스 토큰 쿠키 설정
+        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+        refreshCookie.setMaxAge(10 * 60 * 60); // 10 시간
+        refreshCookie.setSecure(false); // HTTPS 통신일 경우만 쿠키 전송
+        refreshCookie.setPath("/");
+        refreshCookie.setHttpOnly(true);
+        // SameSite=None을 추가하여 크로스 사이트 요청 시 쿠키가 전송되도록 설정
+        String accessCookieString = String.format("%s=%s; Path=%s; Max-Age=%d; HttpOnly; SameSite=Lax",
+                refreshCookie.getName(), refreshCookie.getValue(), refreshCookie.getPath(), refreshCookie.getMaxAge());
+
         response.addHeader("Set-Cookie", accessCookieString);
         response.getWriter().write(jsonResponse);
         response.getWriter().flush();
