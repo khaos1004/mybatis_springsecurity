@@ -29,9 +29,13 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String[] excludePath = {"/login", "/refresh", "/access"};
+        String[] excludePath = {"/login", "/refresh", "/access", "/alarm/report"};
         // 제외할 url 설정
+
         String path = request.getRequestURI();
+        System.out.println(path);
+        System.out.println(Arrays.stream(excludePath).anyMatch(path::startsWith));
+
         return Arrays.stream(excludePath).anyMatch(path::startsWith);
     }
 
@@ -53,15 +57,14 @@ public class JWTFilter extends OncePerRequestFilter {
             }
         }
 
-        // 토큰이 없다면 다음 필터로 넘김
+
         if (accessToken == null) {
+
             PrintWriter writer = response.getWriter();
             writer.print("access token is null");
-
-            //response status code
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
 //            filterChain.doFilter(request, response);
+            return;
         }
 
         // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음

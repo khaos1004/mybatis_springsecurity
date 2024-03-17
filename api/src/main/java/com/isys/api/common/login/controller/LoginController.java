@@ -80,18 +80,22 @@ public class LoginController {
         //get refresh token
         String refresh = null;
         Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
 
-            if (cookie.getName().equals("refreshToken")) {
+        if(cookies != null) {
+            for (Cookie cookie : cookies) {
 
-                refresh = cookie.getValue();
+                if (cookie.getName().equals("refreshToken")) {
+
+                    refresh = cookie.getValue();
+                    break;
+                }
             }
         }
 
         if (refresh == null) {
 
             //response status code
-            return new ResponseEntity<>("refresh token null", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("refresh token is null", HttpStatus.BAD_REQUEST);
         }
 
         //expired check
@@ -144,11 +148,15 @@ public class LoginController {
         //get refresh token
         String access = null;
         Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
 
-            if (cookie.getName().equals("accessToken")) {
+        if(cookies != null) {
+            for (Cookie cookie : cookies) {
 
-                access = cookie.getValue();
+                if (cookie.getName().equals("accessToken")) {
+
+                    access = cookie.getValue();
+                    break;
+                }
             }
         }
 

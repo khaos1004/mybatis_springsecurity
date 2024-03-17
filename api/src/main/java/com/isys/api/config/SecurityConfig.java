@@ -66,12 +66,17 @@ public class SecurityConfig {
 //    @Bean
 //    public WebSecurityCustomizer webSecurityCustomizer() {
 //        return (web) -> web.ignoring()
-//                .requestMatchers("/login");
+//                .requestMatchers("/refresh", "/alarm/report", "/access", "/login");
 //    }
 
 //    @Bean
 //    public BCryptPasswordEncoder bCryptPasswordEncoder() {
 //        return new BCryptPasswordEncoder();
+//    }
+
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        return (web) -> web.ignoring().requestMatchers("/refresh", "/alarm/report", "/access", "/login");
 //    }
 
     @Bean
@@ -100,7 +105,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/refresh", "/alarm/report", "/access", "/login").permitAll()
-                        .requestMatchers("/admin").hasRole("ADMIN")
+//                        .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated())
                         .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
                         .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class)
